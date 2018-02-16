@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -51,3 +54,17 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+const Dishes = require('./models/dishes');
+
+// Connection URL
+const url = 'mongodb://localhost:27017/conFusion';
+const connect = mongoose.connect(url, {
+//    useMongoClient: true,
+    /* other options */
+  });
+
+connect.then((db) => {
+    console.log("Connected correctly to server");
+}, (err) => { console.log(err); });
+
