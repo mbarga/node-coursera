@@ -1,12 +1,13 @@
-const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
-
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
+var passport = require('passport');
+var authenticate = require('./authenticate');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -26,11 +27,16 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(cookieParser('12345-67890-09876-54321'));
+
+app.use(passport.initialize());
+var config = require('./config');
 
 app.use('/', index);
 app.use('/users', users);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
@@ -52,13 +58,18 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
 module.exports = app;
 
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
+
 const Dishes = require('./models/dishes');
+const Promos = require('./models/promotions');
+const Leaders = require('./models/leaders');
 
 // Connection URL
-const url = 'mongodb://localhost:27017/conFusion';
+//const url = 'mongodb://localhost:27017/conFusion';
+const url = config.mongoUrl;
 const connect = mongoose.connect(url, {
 //    useMongoClient: true,
     /* other options */
@@ -67,4 +78,5 @@ const connect = mongoose.connect(url, {
 connect.then((db) => {
     console.log("Connected correctly to server");
 }, (err) => { console.log(err); });
+
 
