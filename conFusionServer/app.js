@@ -8,13 +8,27 @@ var session = require('express-session');
 var FileStore = require('session-file-store')(session);
 var passport = require('passport');
 var authenticate = require('./authenticate');
+var config = require('./config');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
+
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
+
+const Dishes = require('./models/dishes');
+
+const url = config.mongoUrl;
+const connect = mongoose.connect(url, {
+//    useMongoClient: true,
+  });
+
+connect.then((db) => {
+    console.log("Connected correctly to server");
+}, (err) => { console.log(err); });
 
 var app = express();
 
@@ -30,7 +44,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(cookieParser('12345-67890-09876-54321'));
 
 app.use(passport.initialize());
-var config = require('./config');
 
 app.use('/', index);
 app.use('/users', users);
@@ -59,24 +72,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 module.exports = app;
-
-const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
-
-const Dishes = require('./models/dishes');
-const Promos = require('./models/promotions');
-const Leaders = require('./models/leaders');
-
-// Connection URL
-//const url = 'mongodb://localhost:27017/conFusion';
-const url = config.mongoUrl;
-const connect = mongoose.connect(url, {
-//    useMongoClient: true,
-    /* other options */
-  });
-
-connect.then((db) => {
-    console.log("Connected correctly to server");
-}, (err) => { console.log(err); });
-
 
