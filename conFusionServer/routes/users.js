@@ -10,14 +10,20 @@ router.use(bodyParser.json());
 
 /* GET users listing. */
 router.route('/')
-.get(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+.get(authenticate.verifyOrdinaryUser, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
 	User.find({})
-	.then((users) => {
+	.then((err, users) => {
+		if (err) {
+			res.statusCode = 500;
+			res.setHeader('Content-Type', 'application/json');
+			res.json({err:err});
+		} else {
+			console.log('User Found \n', users);
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'application/json');
 			res.json(users);
-	}, (err) => next(err))
-	.catch((err) => next(err));
+		}
+	});
 });
 
 router.post('/signup', (req, res, next) => {

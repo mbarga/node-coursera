@@ -38,6 +38,28 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 
 exports.verifyUser = passport.authenticate('jwt', {session: false});
 
+exports.verifyOrdinaryUser = (req, res, next) => {
+    var token = req.body.token || req.query.token || req.headers['x-access-token'] || req.headers['authorization'];
+    if (token) {
+        token = token.replace('bearer ', '')
+        console.log(token);
+        jwt.verify(token, config.secretKey, (err, decoded) => {
+            if (err) {
+                var err = new Error('You are not authenticated!');
+                err.status = 401;
+                next(err);
+            } else {
+                req.decoded = decoded;
+                next();
+            }
+        });
+    } else {
+        var err = new Error('No token provided!');
+        err.status = 403;
+        next(err);
+    }
+};
+
 exports.verifyAdmin = function(req, res, next) {
 	if (req.user.admin == true) {
 		next();
